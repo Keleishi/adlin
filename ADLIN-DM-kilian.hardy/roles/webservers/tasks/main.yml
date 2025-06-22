@@ -61,7 +61,6 @@
 # Lancement de certbot
 - name: Obtain HTTPS certificates with Certbot
   command: >
-    bash -c "export SSL_CERT_DIR=/etc/letsencrypt/live &&
     certbot --nginx --non-interactive --agree-tos
     --email {{ email }}
     -d {{ item.name }}.{{ domain_suffix }}
@@ -71,7 +70,7 @@
   changed_when: "'Congratulations' in certbot_result.stdout"
   failed_when: "'failed to obtain' in certbot_result.stdout"
 
-# config HTTPS finale
+# PHASE config HTTPS finale
 - name: Overwrite nginx config with HTTPS+redirect
   template:
     src: site_https.conf.j2
