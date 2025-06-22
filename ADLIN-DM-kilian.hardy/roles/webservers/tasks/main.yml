@@ -90,8 +90,8 @@
 
 - name: Enable HTTP-only nginx sites
   file:
-    src: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
-    dest: "/etc/nginx/sites-enabled/{{ item.name }}.{{ domain_suffix }}"
+    src: "/etc/nginx/sites-available/{{ item.name }}.srs.adlin"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}.srs.adlin"
     state: link
     force: true
   loop: "{{ sites }}"
