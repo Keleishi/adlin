@@ -97,7 +97,13 @@
   loop: "{{ sites }}"
   notify: Restart nginx
 
-- name: Configure firewall for HTTP and HTTPS
+- name: Ensure ufw is installed
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Allow HTTP and HTTPS through the firewall
   ufw:
     rule: allow
     port: "{{ item }}"
@@ -105,6 +111,11 @@
   loop:
     - '80'
     - '443'
+
+- name: Enable ufw
+  ufw:
+    state: enabled
+
 
 - name: Wait for nginx to be ready
   wait_for:
