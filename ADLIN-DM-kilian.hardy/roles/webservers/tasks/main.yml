@@ -64,9 +64,9 @@
     --nginx
     --non-interactive
     --agree-tos
-    --email {{ certbot_email }}
+    --email {{ email }}
     --server {{ acme_server }}
-    --domains supervision.{{ domain_name }}
+    --domains supervision.{{ domain_suffix }}
     --keep-until-expiring
   register: certbot_supervision_result
   failed_when: certbot_supervision_result.rc != 0 and "Certificate not yet due for renewal" not in certbot_supervision_result.stderr
