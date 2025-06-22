@@ -64,13 +64,13 @@
     certbot --nginx --non-interactive --agree-tos
     --email {{ email }}
     -d {{ item.name }}.{{ domain_suffix }}
-    --server {{ acme_server }}"
+    --server {{ acme_server }}
   loop: "{{ sites }}"
-  register: certbot_result
-  changed_when: "'Congratulations' in certbot_result.stdout"
-  failed_when: "'failed to obtain' in certbot_result.stdout"
+  register: certbot_results
+  changed_when: "'Congratulations' in certbot_results.stdout"
+  failed_when: "'failed to obtain' in certbot_results.stdout"
 
-# PHASE config HTTPS finale
+# config HTTPS finale
 - name: Overwrite nginx config with HTTPS+redirect
   template:
     src: site_https.conf.j2
