@@ -1,4 +1,5 @@
 ---
+
 - name: Install NGINX and Certbot
   apt:
     name:
@@ -31,9 +32,6 @@
   register: ca_update
   changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
 
-- name: Force environment trust path for Certbot
-  shell: export SSL_CERT_DIR=/etc/ssl/certs
-
 - name: Copy index pages and cat image
   copy:
     src: "{{ item }}"
@@ -43,14 +41,15 @@
     - "{{ role_path }}/files/ilovecats.html"
     - "{{ role_path }}/files/chat.jpg"
 
-- name: Create nginx site configuration
+# PHASE 1: config HTTP temporaire
+- name: Create temporary HTTP-only nginx config
   template:
-    src: site.conf.j2
+    src: site_http.conf.j2
     dest: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
   loop: "{{ sites }}"
   notify: Restart nginx
 
-- name: Enable sites
+- name: Enable HTTP-only nginx sites
   file:
     src: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
     dest: "/etc/nginx/sites-enabled/{{ item.name }}.{{ domain_suffix }}"
@@ -59,6 +58,7 @@
   loop: "{{ sites }}"
   notify: Restart nginx
 
+# Lancement de certbot
 - name: Obtain HTTPS certificates with Certbot
   command: >
     bash -c "export SSL_CERT_DIR=/etc/ssl/certs &&
@@ -70,3 +70,11 @@
   register: certbot_result
   changed_when: "'Congratulations' in certbot_result.stdout"
   failed_when: "'failed to obtain' in certbot_result.stdout"
+
+# config HTTPS finale
+- name: Overwrite nginx config with HTTPS+redirect
+  template:
+    src: site_https.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
+  loop: "{{ sites }}"
+  notify: Restart nginx

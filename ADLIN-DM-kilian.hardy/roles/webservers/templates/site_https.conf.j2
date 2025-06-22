@@ -1,0 +1,22 @@
+# Redirection HTTP → HTTPS
+server {
+    listen 80;
+    server_name {{ item.name }}.{{ domain_suffix }};
+    return 301 https://$host$request_uri;
+}
+
+# HTTPS sécurisé avec certificats
+server {
+    listen 443 ssl;
+    server_name {{ item.name }}.{{ domain_suffix }};
+
+    root {{ web_root }}/{{ item.name }}.{{ domain_suffix }};
+    index index.html;
+
+    ssl_certificate /etc/letsencrypt/live/{{ item.name }}.{{ domain_suffix }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ item.name }}.{{ domain_suffix }}/privkey.pem;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
