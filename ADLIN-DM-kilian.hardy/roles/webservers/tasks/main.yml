@@ -13,12 +13,22 @@
     recurse: yes
   loop: "{{ sites }}"
 
-- name: Download ACME root certificate from remote server
+- name: Download ACME root certificate (with validation disabled)
   get_url:
     url: https://acme.srs.adlin:9000/roots
     dest: /usr/local/share/ca-certificates/acme-root.crt
     mode: '0644'
     validate_certs: no
+  register: acme_download
+
+- name: Debug download result
+  debug:
+    var: acme_download
+
+- name: Check if certificate is in PEM format
+  shell: grep "BEGIN CERTIFICATE" /usr/local/share/ca-certificates/acme-root.crt
+  register: pem_check
+  failed_when: pem_check.rc != 0
 
 - name: Ensure the certificate is in the correct format
   shell: |
