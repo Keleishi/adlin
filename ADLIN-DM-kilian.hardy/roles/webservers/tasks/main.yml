@@ -61,7 +61,7 @@
 # Lancement de certbot
 - name: Obtain HTTPS certificates with Certbot
   command: >
-    bash -c "export SSL_CERT_DIR=/etc/ssl/certs &&
+    bash -c "export SSL_CERT_DIR=/etc/letsencrypt/live &&
     certbot --nginx --non-interactive --agree-tos
     --email {{ email }}
     -d {{ item.name }}.{{ domain_suffix }}
