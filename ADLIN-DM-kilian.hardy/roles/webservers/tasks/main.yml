@@ -29,6 +29,7 @@
     content: "{{ acme_root_json.content }}"
     dest: /tmp/acme-root.json
     mode: '0644
+
 - name: Extract PEM certificate from JSON
   shell: jq -r '.crts[]' /tmp/acme-root.json > /usr/local/share/ca-certificates/acme-root.crt
   args:
