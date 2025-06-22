@@ -66,14 +66,19 @@
     state: absent
   notify: restart nginx
 
-- name: Copy index pages and cat image
+- name: Copy index pages
   copy:
     src: "{{ item }}"
-    dest: "{{ web_root }}/{{ (item | basename | regex_replace('index_|\\.html|\\.jpg', '')) }}.{{ domain_suffix }}/{{ item | basename }}"
+    dest: "{{ web_root }}/{{ (item | basename | regex_replace('index_|\\.html', '')) }}.{{ domain_suffix }}/{{ item | basename }}"
   with_fileglob:
     - "{{ role_path }}/files/index_*.html"
     - "{{ role_path }}/files/ilovecats.html"
-    - "{{ role_path }}/files/cat.jpg"
+
+- name: Copy cat.jpg only for ilovecats site
+  copy:
+    src: "{{ role_path }}/files/cat.jpg"
+    dest: "{{ web_root }}/ilovecats.{{ domain_suffix }}/cat.jpg"
+
 
 # PHASE 1: config HTTP temporaire
 - name: Create temporary HTTP-only nginx config

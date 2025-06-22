@@ -3,3 +3,18 @@
   service:
     name: nginx
     state: restarted
+    
+- name: reload nginx
+  systemd:
+    name: nginx
+    state: reloaded
+
+- name: test nginx config
+  command: nginx -t
+  register: nginx_test_result
+  failed_when: nginx_test_result.rc != 0
+
+- name: update ca certificates
+  command: update-ca-certificates
+  register: update_ca_result
+  changed_when: "'1 added' in update_ca_result.stdout or '1 removed' in update_ca_result.stdout"
