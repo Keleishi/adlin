@@ -16,12 +16,19 @@
   loop: "{{ sites }}"
 
 - name: Download ACME root certificate JSON
-  get_url:
+  ansible.builtin.uri:
     url: https://acme.srs.adlin:9000/roots
-    dest: /tmp/acme-root.json
-    mode: '0644'
+    method: GET
+    return_content: yes
     validate_certs: no
+    status_code: [200, 201]
+  register: acme_root_json
 
+- name: Write ACME root certificate JSON to file
+  copy:
+    content: "{{ acme_root_json.content }}"
+    dest: /tmp/acme-root.json
+    mode: '0644
 - name: Extract PEM certificate from JSON
   shell: jq -r '.crts[]' /tmp/acme-root.json > /usr/local/share/ca-certificates/acme-root.crt
   args:
