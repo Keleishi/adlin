@@ -140,7 +140,11 @@
     state: enabled
     policy: allow
 
-
+- name: Start and enable nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
 
 - name: Wait for nginx to be ready
   wait_for:
