@@ -15,15 +15,31 @@
     recurse: yes
   loop: "{{ sites }}"
 
-- name: Download ACME root certificate JSON with curl (accept any HTTP code)
-  shell: curl -ksSf https://acme.srs.adlin:9000/roots -o /tmp/acme-root.json
-  args:
-    creates: /tmp/acme-root.json
+- name: Get ACME root certificate JSON (accept 201)
+  uri:
+    url: https://acme.srs.adlin:9000/roots
+    method: GET
+    return_content: yes
+    validate_certs: no
+    status_code: [200, 201]
+    body_format: json
+  register: ca_response
 
-- name: Extract PEM certificate from JSON
-  shell: jq -r '.crts[]' /tmp/acme-root.json > /usr/local/share/ca-certificates/acme-root.crt
-  args:
-    creates: /usr/local/share/ca-certificates/acme-root.crt
+- name: Extract certificate from JSON response
+  set_fact:
+    ca_certificate: "{{ ca_response.json.crts[0] }}"
+
+- name: Write CA certificate to file
+  copy:
+    content: "{{ ca_certificate }}"
+    dest: /usr/local/share/ca-certificates/acme-root.crt
+    mode: '0644'
+
+- name: Update CA trust store (system-wide)
+  command: update-ca-certificates
+  register: ca_update
+  changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
+
 
 - name: Ensure the certificate is in the correct format
   shell: |
