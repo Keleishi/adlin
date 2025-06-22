@@ -59,14 +59,21 @@
     path: "/etc/nginx/sites-enabled/default"
     state: absent
   notify: Restart nginx
-
-- name: Copy index pages
+  
+- name: Copy index pages for each site
   copy:
-    src: "{{ item }}"
-    dest: "{{ web_root }}/{{ (item | basename | regex_replace('index_|\\.html', '')) }}.{{ domain_suffix }}/{{ item | basename }}"
-  with_fileglob:
-    - "{{ role_path }}/files/index_*.html"
-    - "{{ role_path }}/files/ilovecats.html"
+    src: "{{ role_path }}/files/index_{{ item.name }}.html"
+    dest: "{{ web_root }}/{{ item.name }}.{{ domain_suffix }}/index.html"
+  loop:
+    - { name: "web1" }
+    - { name: "web2" }
+    - { name: "web3" }
+    - { name: "web4" }
+
+- name: Copy ilovecats.html as index.html
+  copy:
+    src: "{{ role_path }}/files/ilovecats.html"
+    dest: "{{ web_root }}/ilovecats.{{ domain_suffix }}/index.html"
 
 - name: Copy cat.jpg only for ilovecats site
   copy:
