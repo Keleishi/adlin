@@ -18,6 +18,7 @@
     url: https://acme.srs.adlin:9000/roots
     dest: /usr/local/share/ca-certificates/acme-root.crt
     mode: '0644'
+    validate_certs: no
 
 - name: Ensure the certificate is in the correct format
   shell: |
