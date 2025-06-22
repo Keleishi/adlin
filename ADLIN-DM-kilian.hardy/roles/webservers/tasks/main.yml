@@ -1,0 +1,68 @@
+---
+- name: Install NGINX and Certbot
+  apt:
+    name:
+      - nginx
+      - python3-certbot-nginx
+    update_cache: yes
+
+- name: Create site root directories
+  file:
+    path: "{{ web_root }}/{{ item.name }}.{{ domain_suffix }}"
+    state: directory
+    recurse: yes
+  loop: "{{ sites }}"
+
+- name: Download ACME root certificate from remote server
+  get_url:
+    url: https://acme.srs.adlin:9000/roots
+    dest: /usr/local/share/ca-certificates/acme-root.crt
+    mode: '0644'
+
+- name: Ensure the certificate is in the correct format
+  shell: |
+    if ! grep -q "BEGIN CERTIFICATE" /usr/local/share/ca-certificates/acme-root.crt; then
+      echo "ERROR: Invalid certificate format"; exit 1
+    fi
+  args:
+    executable: /bin/bash
+
+- name: Update CA trust store (system-wide)
+  command: update-ca-certificates
+  register: ca_update
+  changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
+
+
+- name: Copy index pages and cat image
+  copy:
+    src: "{{ item }}"
+    dest: "{{ web_root }}/{{ (item | basename | regex_replace('index_|\\.html|\\.jpg', '')) }}.{{ domain_suffix }}/{{ item }}"
+  with_fileglob:
+    - "{{ role_path }}/files/index_*.html"
+    - "{{ role_path }}/files/ilovecats.html"
+    - "{{ role_path }}/files/chat.jpg"
+
+- name: Create nginx site configuration
+  template:
+    src: site.conf.j2
+    dest: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
+  loop: "{{ sites }}"
+  notify: Restart nginx
+
+- name: Enable sites
+  file:
+    src: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}.{{ domain_suffix }}"
+    state: link
+    force: true
+  loop: "{{ sites }}"
+  notify: Restart nginx
+
+- name: Obtain HTTPS certificates with Certbot
+  command: >
+    certbot --nginx --non-interactive --agree-tos
+    --email {{ email }}
+    -d {{ item.name }}.{{ domain_suffix }}
+    --server {{ acme_server }}
+  loop: "{{ sites }}"
+

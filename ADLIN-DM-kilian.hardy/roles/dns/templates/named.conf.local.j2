@@ -1,0 +1,7 @@
+zone "{{ subdomain }}.srs.adlin" {
+	type master;
+	file "/etc/bind/db.{{ subdomain }}.srs.adlin";
+	allow-transfer { 100.64.51.1; };
+	notify yes;
+	also-notify { 100.64.51.1; };
+};

@@ -1,0 +1,17 @@
+$TTL	3600
+@	IN	SOA	ns1.{{ subdomain }}.srs.adlin. admin.{{ subdomain }}.srs.adlin. (
+			{{ ansible_date_time.epoch}} ; Serial
+			7200	   ; Refresh
+			3600	   ; Retry
+			300    	   ; Expire
+			86400 )    ; Negative Cache TTL
+;
+@	IN	NS	ns1.{{ subdomain }}.srs.adlin.
+	IN	A	{{ dns_ip }}
+ns1	IN	A	{{ dns_ip }}
+;
+web1	IN	A	{{ web1_ip }}
+web2	IN	A	{{ web2_ip }}
+web3	IN	A	{{ web3_ip }}
+web4	IN	A	{{ web4_ip }}
+ilovecats IN	A	{{ ilovecats_ip }}

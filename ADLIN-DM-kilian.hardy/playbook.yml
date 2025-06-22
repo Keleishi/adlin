@@ -1,0 +1,13 @@
+---
+- name: Deploy DNS server
+  hosts: dns_servers
+  become: true
+  roles:
+    - dns
+
+- name: Deploy Web server
+  hosts: web_servers
+  become: true
+  roles:
+    - webservers
+

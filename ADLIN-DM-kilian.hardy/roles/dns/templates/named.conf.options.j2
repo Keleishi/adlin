@@ -1,0 +1,23 @@
+options {
+	directory "/var/cache/bind";
+	auth-nxdomain no;	
+
+	allow-transfer { 100.64.51.1; };
+
+	recursion yes;
+	allow-recursion {any; };
+
+	forwarders{
+		100.64.51.1;
+	};
+
+	listen-on { any; };
+
+	dnssec-validation no;
+
+	allow-query { any ;};
+	allow-query-cache { any ;};
+
+	notify yes;
+};
+
