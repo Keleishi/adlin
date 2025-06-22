@@ -133,7 +133,7 @@
     --server {{ acme_server }}
     --domains {{ domain_suffix }}
     --keep-until-expiring
-  loop: "{{ web_sites }}"
+  loop: "{{ sites }}"
   register: certbot_result
   failed_when: certbot_result.rc != 0 and "Certificate not yet due for renewal" not in certbot_result.stderr
   notify: restart nginx
