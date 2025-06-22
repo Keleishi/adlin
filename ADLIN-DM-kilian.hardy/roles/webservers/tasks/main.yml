@@ -2,18 +2,22 @@
 
 - name: Install NGINX, Certbot
   apt:
-    name:
-      - nginx
-      - python3-certbot-nginx
-      - ca-certificates
+    name: "{{ required_packages }}"
+    state: present
     update_cache: yes
 
 - name: Create site root directories
   file:
-    path: "{{ web_root }}/{{ item.name }}.{{ domain_suffix }}"
+    path: "{{ web_root }}/{{ item.name }}"
     state: directory
     recurse: yes
   loop: "{{ sites }}"
+
+- name: Create ACME challenge directory
+  file:
+    path: "{{ web_root }}/.well-known/acme-challenge"
+    state: directory
+    recurse: yes
 
 - name: Get ACME root certificate JSON (accept 201)
   uri:
@@ -33,6 +37,8 @@
   copy:
     content: "{{ ca_certificate }}"
     dest: /usr/local/share/ca-certificates/acme-root.crt
+    owner: root
+    group: root
     mode: '0644'
 
 - name: Update CA trust store (system-wide)
@@ -54,6 +60,12 @@
   register: ca_update
   changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
 
+- name: Remove default nginx site
+  file:
+    path: "{{ nginx_conf_path }}/sites-enabled/default"
+    state: absent
+  notify: restart nginx
+
 - name: Copy index pages and cat image
   copy:
     src: "{{ item }}"
@@ -61,13 +73,13 @@
   with_fileglob:
     - "{{ role_path }}/files/index_*.html"
     - "{{ role_path }}/files/ilovecats.html"
-    - "{{ role_path }}/files/chat.jpg"
+    - "{{ role_path }}/files/cat.jpg"
 
 # PHASE 1: config HTTP temporaire
 - name: Create temporary HTTP-only nginx config
   template:
     src: site_http.conf.j2
-    dest: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
+    dest: "/etc/nginx/sites-available/{{ item.name }}"
   loop: "{{ sites }}"
   notify: Restart nginx
 
@@ -80,13 +92,34 @@
   loop: "{{ sites }}"
   notify: Restart nginx
 
+- name: Start and enable nginx
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Configure firewall for HTTP and HTTPS
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - '80'
+    - '443'
+
+- name: Wait for nginx to be ready
+  wait_for:
+    port: 80
+    host: localhost
+    delay: 5
+
 - name: Obtain SSL certificates
   command: >
     certbot certonly
     --nginx
     --non-interactive
     --agree-tos
-    --email {{ certbot_email }}
+    --email {{ email }}
     --server {{ acme_server }}
     --domains {{ domain_suffix }}
     --keep-until-expiring
@@ -99,6 +132,15 @@
 - name: Overwrite nginx config with HTTPS+redirect
   template:
     src: site_https.conf.j2
-    dest: "/etc/nginx/sites-available/{{ item.name }}.{{ domain_suffix }}"
+    dest: "/etc/nginx/sites-available/{{ item.name }}.conf"
   loop: "{{ sites }}"
   notify: Restart nginx
+
+- name: Setup automatic certificate renewal
+  cron:
+    name: "Certbot renewal"
+    minute: "{{ certbot_auto_renew_minute }}"
+    hour: "{{ certbot_auto_renew_hour }}"
+    job: "certbot renew --quiet --nginx"
+    user: root
+  when: certbot_auto_renew
