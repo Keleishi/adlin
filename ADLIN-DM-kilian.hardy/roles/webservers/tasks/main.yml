@@ -191,8 +191,8 @@
 - name: Setup automatic certificate renewal
   cron:
     name: "Certbot renewal"
-    minute: "{{ certbot_auto_renew_minute }}"
-    hour: "{{ certbot_auto_renew_hour }}"
+    minute: "30"
+    hour: "1"
     job: "certbot renew --quiet --nginx"
     user: root
-  when: certbot_auto_renew
+  when: true
