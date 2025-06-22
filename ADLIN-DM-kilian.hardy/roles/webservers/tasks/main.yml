@@ -41,12 +41,6 @@
     group: root
     mode: '0644'
 
-- name: Update CA trust store (system-wide)
-  command: update-ca-certificates
-  register: ca_update
-  changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
-
-
 - name: Ensure the certificate is in the correct format
   shell: |
     if ! grep -q "BEGIN CERTIFICATE" /usr/local/share/ca-certificates/acme-root.crt; then
@@ -62,9 +56,9 @@
 
 - name: Remove default nginx site
   file:
-    path: "etc/nginx/sites-enabled/default"
+    path: "/etc/nginx/sites-enabled/default"
     state: absent
-  notify: restart nginx
+  notify: Restart nginx
 
 - name: Copy index pages
   copy:
@@ -79,19 +73,18 @@
     src: "{{ role_path }}/files/cat.jpg"
     dest: "{{ web_root }}/ilovecats.{{ domain_suffix }}/cat.jpg"
 
-
 # PHASE 1: config HTTP temporaire
 - name: Create temporary HTTP-only nginx config
   template:
     src: site_http.conf.j2
-    dest: "/etc/nginx/sites-available/{{ item.name }}"
+    dest: "/etc/nginx/sites-available/{{ item.name }}.conf"
   loop: "{{ sites }}"
   notify: Restart nginx
 
 - name: Enable HTTP-only nginx sites
   file:
-    src: "/etc/nginx/sites-available/{{ item.name }}"
-    dest: "/etc/nginx/sites-enabled/{{ item.name }}"
+    src: "/etc/nginx/sites-available/{{ item.name }}.conf"
+    dest: "/etc/nginx/sites-enabled/{{ item.name }}.conf"
     state: link
     force: true
   loop: "{{ sites }}"
@@ -152,6 +145,7 @@
     host: localhost
     delay: 5
 
+# OBTENTION DES CERTIFICATS
 - name: Obtain SSL certificates
   command: >
     certbot certonly
@@ -160,14 +154,14 @@
     --agree-tos
     --email {{ email }}
     --server {{ acme_server }}
-    --domains {{ domain_suffix }}
+    --domains {{ item.name }}.{{ domain_suffix }}
     --keep-until-expiring
   loop: "{{ sites }}"
   register: certbot_result
   failed_when: certbot_result.rc != 0 and "Certificate not yet due for renewal" not in certbot_result.stderr
-  notify: restart nginx
-  
-# config HTTPS finale
+  notify: Restart nginx
+
+# PHASE 2: config HTTPS finale
 - name: Overwrite nginx config with HTTPS+redirect
   template:
     src: site_https.conf.j2
