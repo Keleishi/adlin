@@ -160,7 +160,7 @@
     --agree-tos
     --email {{ email }}
     --server {{ acme_server }}
-    --domains {{ item.name }}.{{ domain_suffix }}
+    --domains {{ item.name }}
     --keep-until-expiring
   loop: "{{ sites }}"
   register: certbot_result
