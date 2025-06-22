@@ -20,7 +20,6 @@ server {
     root {{ web_root }}/{{ item.name }};
     index index.html index.htm;
     
-    # SSL Configuration
     ssl_certificate /etc/letsencrypt/live/{{ item.name }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ item.name }}/privkey.pem;
     ssl_trusted_certificate /etc/letsencrypt/live/{{ item.name }}/chain.pem;
@@ -29,10 +28,8 @@ server {
     ssl_ciphers {{ ssl_ciphers }};
     ssl_prefer_server_ciphers {{ ssl_prefer_server_ciphers }};
     
-    # HSTS
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     
-    # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
