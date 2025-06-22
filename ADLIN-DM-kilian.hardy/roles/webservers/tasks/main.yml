@@ -73,6 +73,12 @@
     src: "{{ role_path }}/files/cat.jpg"
     dest: "{{ web_root }}/ilovecats.{{ domain_suffix }}/cat.jpg"
 
+- name: Remove old configs for sites
+  file:
+    path: "/etc/nginx/sites-enabled/{{ item.name }}.conf"
+    state: absent
+  loop: "{{ sites }}"
+
 # PHASE 1: config HTTP temporaire
 - name: Create temporary HTTP-only nginx config
   template:
