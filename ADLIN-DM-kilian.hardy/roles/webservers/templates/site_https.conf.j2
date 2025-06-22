@@ -21,9 +21,9 @@ server {
     index index.html index.htm;
     
     # SSL Configuration
-    ssl_certificate {{ ssl_cert_path }}/{{ item.name }}/fullchain.pem;
-    ssl_certificate_key {{ ssl_cert_path }}/{{ item.name }}/privkey.pem;
-    ssl_trusted_certificate {{ ssl_cert_path }}/{{ item.name }}/chain.pem;
+    ssl_certificate /etc/letsencrypt/live/{{ item.name }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ item.name }}/privkey.pem;
+    ssl_trusted_certificate /etc/letsencrypt/live/{{ item.name }}/chain.pem;
     
     ssl_protocols {{ ssl_protocols }};
     ssl_ciphers {{ ssl_ciphers }};
