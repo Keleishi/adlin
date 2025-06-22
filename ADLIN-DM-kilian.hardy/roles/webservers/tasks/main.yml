@@ -1,11 +1,11 @@
 ---
 
-- name: Install NGINX, Certbot, and jq
+- name: Install NGINX, Certbot
   apt:
     name:
       - nginx
       - python3-certbot-nginx
-      - jq
+      - ca-certificates
     update_cache: yes
 
 - name: Create site root directories
@@ -88,7 +88,7 @@
     --agree-tos
     --email {{ email }}
     --server {{ acme_server }}
-    --domains supervision.srs.adlin
+    --domains supervision.{{ domain_suffix }}
     --keep-until-expiring
   register: certbot_supervision_result
   failed_when: certbot_supervision_result.rc != 0 and "Certificate not yet due for renewal" not in certbot_supervision_result.stderr
