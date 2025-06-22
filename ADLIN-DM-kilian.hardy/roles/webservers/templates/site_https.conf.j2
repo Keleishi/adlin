@@ -1,21 +1,43 @@
-# Redirection HTTP → HTTPS
 server {
     listen 80;
-    server_name {{ item.name }}.{{ domain_suffix }};
-    return 301 https://$host$request_uri;
+    server_name {{ item.name }};
+    
+    location /.well-known/acme-challenge/ {
+        root {{ web_root }};
+        try_files $uri =404;
+    }
+    
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
 }
 
-# HTTPS sécurisé avec certificats
+
 server {
-    listen 443 ssl;
-    server_name {{ item.name }}.{{ domain_suffix }};
-
-    root {{ web_root }}/{{ item.name }}.{{ domain_suffix }};
-    index index.html;
-
-    ssl_certificate /etc/letsencrypt/live/{{ item.name }}.{{ domain_suffix }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ item.name }}.{{ domain_suffix }}/privkey.pem;
-
+ listen 443 ssl http2;
+    server_name {{ item.name }};
+    
+    root {{ web_root }}/{{ item.name }};
+    index index.html index.htm;
+    
+    # SSL Configuration
+    ssl_certificate {{ ssl_cert_path }}/{{ item.name }}/fullchain.pem;
+    ssl_certificate_key {{ ssl_cert_path }}/{{ item.name }}/privkey.pem;
+    ssl_trusted_certificate {{ ssl_cert_path }}/{{ item.name }}/chain.pem;
+    
+    ssl_protocols {{ ssl_protocols }};
+    ssl_ciphers {{ ssl_ciphers }};
+    ssl_prefer_server_ciphers {{ ssl_prefer_server_ciphers }};
+    
+    # HSTS
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    
     location / {
         try_files $uri $uri/ =404;
     }

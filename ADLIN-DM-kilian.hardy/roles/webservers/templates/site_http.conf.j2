@@ -1,9 +1,14 @@
 server {
     listen 80;
-    server_name {{ item.name }}.{{ domain_suffix }};
+    server_name {{ item.name }};
 
     root {{ web_root }}/{{ item.name }}.{{ domain_suffix }};
     index index.html;
+
+    location /.well-known/acme-challenge/ {
+        root {{ web_root }};
+        try_files $uri =404;
+    }
 
     location / {
         try_files $uri $uri/ =404;
