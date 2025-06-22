@@ -58,15 +58,18 @@
   loop: "{{ sites }}"
   notify: Restart nginx
 
-# Lancement de certbot
-- name: Obtain HTTPS certificates with Certbot
+- name: Obtain SSL certificate for supervision
   command: >
-    certbot --nginx --non-interactive --agree-tos
-    --email {{ email }}
-    -d {{ item.name }}.{{ domain_suffix }}
+    certbot certonly
+    --nginx
+    --non-interactive
+    --agree-tos
+    --email {{ certbot_email }}
     --server {{ acme_server }}
-  loop: "{{ sites }}"
-  register: certbot_results
+    --domains supervision.{{ domain_name }}
+    --keep-until-expiring
+  register: certbot_supervision_result
+  failed_when: certbot_supervision_result.rc != 0 and "Certificate not yet due for renewal" not in certbot_supervision_result.stderr
 
 # config HTTPS finale
 - name: Overwrite nginx config with HTTPS+redirect

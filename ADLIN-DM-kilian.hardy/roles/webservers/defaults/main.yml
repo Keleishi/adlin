@@ -7,6 +7,13 @@ sites:
   - name: "web4"
   - name: "ilovecats"
 web_root: /var/www
+required_packages:
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - curl
+  - wget
+  - ca-certificates
 acme_server: "https://acme.srs.adlin:9000/acme/acme/directory"
 email: "admin@{{ domain_suffix }}"
 ssl_protocols: "TLSv1.2 TLSv1.3"
