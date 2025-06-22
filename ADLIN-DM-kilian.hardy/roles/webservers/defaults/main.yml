@@ -1,11 +1,11 @@
 subdomain: "30"
 domain_suffix: "{{ subdomain }}.srs.adlin"
 sites:
-  - names: "web1"
-  - names: "web2"
-  - names: "web3"
-  - names: "web4"
-  - names: "ilovecats"
+  - name: "web1"
+  - name: "web2"
+  - name: "web3"
+  - name: "web4"
+  - name: "ilovecats"
 web_root: /var/www
 acme_server: "https://acme.srs.adlin:9000/acme/acme/directory"
 email: "admin@{{ domain_suffix }}"
