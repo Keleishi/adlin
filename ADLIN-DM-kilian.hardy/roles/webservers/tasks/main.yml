@@ -31,6 +31,8 @@
   register: ca_update
   changed_when: "'added' in ca_update.stdout or 'done' in ca_update.stdout"
 
+- name: Force environment trust path for Certbot
+  shell: export SSL_CERT_DIR=/etc/ssl/certs
 
 - name: Copy index pages and cat image
   copy:
@@ -59,9 +61,12 @@
 
 - name: Obtain HTTPS certificates with Certbot
   command: >
+    bash -c "export SSL_CERT_DIR=/etc/ssl/certs &&
     certbot --nginx --non-interactive --agree-tos
     --email {{ email }}
     -d {{ item.name }}.{{ domain_suffix }}
-    --server {{ acme_server }}
+    --server {{ acme_server }}"
   loop: "{{ sites }}"
-
+  register: certbot_result
+  changed_when: "'Congratulations' in certbot_result.stdout"
+  failed_when: "'failed to obtain' in certbot_result.stdout"
