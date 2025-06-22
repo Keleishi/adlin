@@ -8,6 +8,8 @@ sites:
   - name: "ilovecats.{{domain_suffix }}"
 web_root: /var/www
 
+nginx_user: www-data
+
 required_packages:
   - nginx
   - certbot

@@ -10,6 +10,9 @@
   file:
     path: "{{ web_root }}/{{ item.name }}"
     state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: '0755'
     recurse: yes
   loop: "{{ sites }}"
 
@@ -17,6 +20,9 @@
   file:
     path: "{{ web_root }}/.well-known/acme-challenge"
     state: directory
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: '0755'
     recurse: yes
 
 - name: Get ACME root certificate JSON (accept 201)
