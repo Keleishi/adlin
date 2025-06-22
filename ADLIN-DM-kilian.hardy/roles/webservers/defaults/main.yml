@@ -1,11 +1,11 @@
 subdomain: "30"
 domain_suffix: "{{ subdomain }}.srs.adlin"
 sites:
-  - name: "web1.{{ subdomain }}"
-  - name: "web2.{{ subdomain }}"
-  - name: "web3.{{ subdomain }}"
-  - name: "web4.{{ subdomain }}"
-  - name: "ilovecats.{{ subdomain }}"
+  - name: "web1.{{domain_suffix }}"
+  - name: "web2.{{domain_suffix }}"
+  - name: "web3.{{domain_suffix }}"
+  - name: "web4.{{domain_suffix }}"
+  - name: "ilovecats.{{domain_suffix }}"
 web_root: /var/www
 
 required_packages:
