@@ -20,6 +20,7 @@
     url: https://acme.srs.adlin:9000/roots
     dest: /tmp/acme-root.json
     mode: '0644'
+    validate_certs: no
 
 - name: Extract PEM certificate from JSON
   shell: jq -r '.crts[]' /tmp/acme-root.json > /usr/local/share/ca-certificates/acme-root.crt
