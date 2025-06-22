@@ -67,8 +67,6 @@
     --server {{ acme_server }}
   loop: "{{ sites }}"
   register: certbot_results
-  changed_when: "'Congratulations' in certbot_results.stdout"
-  failed_when: "'failed to obtain' in certbot_results.stdout"
 
 # config HTTPS finale
 - name: Overwrite nginx config with HTTPS+redirect
